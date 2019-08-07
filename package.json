@@ -1,0 +1,53 @@
+{
+  "name": "@priestine/pipeline",
+  "version": "0.0.0-dev",
+  "description": "Simple and reusable pipelines with abstracted asynchrony",
+  "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "jest": "^24.8.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.5.3"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:cover": "rm -rf coverage && npm run test -- --coverage",
+    "test:watch": "npm run test -- --watch",
+    "lint": "prettier --write \"src/**/*.{ts,yml,md,js}\" \"src/*.{ts,yml,md,js}\" \"*.{ts,yml,md,js}\"",
+    "lint:check": "prettier --list-different \"src/**/*.{ts,yml,md,js}\" \"src/*.{ts,yml,md,js}\" \"*.{ts,yml,md,js}\"",
+    "build:ci": "tsc",
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "fp",
+    "monoid",
+    "pipeline",
+    "middleware",
+    "asyncrhony"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/priestine/pipeline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/priestine/pipeline/issues"
+  },
+  "homepage": "https://github.com/priestine/pipeline#readme",
+  "author": {
+    "email": "priestine1.dev@gmail.com",
+    "name": "Sergei Orlov",
+    "url": "https://priestine.com"
+  },
+  "license": "MIT"
+}
