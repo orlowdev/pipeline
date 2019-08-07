@@ -10,7 +10,7 @@ import { IntermediateInterface } from "./interfaces/intermediate.interface";
  */
 export class Pipeline<TContext> extends BasePipeline<TContext> {
   /**
-   * Pointer interface for lifting given middleware functions to a IntermediatePipeline.
+   * Pointer interface for lifting given middleware functions to a Pipeline.
    * @param middleware - n Middleware functions.
    */
   public static of<T>(...middleware: MiddlewareInterface<T>[]): Pipeline<T> {
@@ -18,7 +18,7 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
   }
 
   /**
-   * Pointer interface for creating a IntermediatePipeline from array of Middleware.
+   * Pointer interface for creating a Pipeline from array of Middleware.
    * @param middleware - Array of Middleware functions.
    */
   public static from<T>(middleware: MiddlewareInterface<T>[]): Pipeline<T> {
@@ -26,7 +26,7 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
   }
 
   /**
-   * Pointer interface for creating an empty IntermediatePipeline.
+   * Pointer interface for creating an empty Pipeline.
    */
   public static empty<T>(): Pipeline<T> {
     return new Pipeline<T>([]);
