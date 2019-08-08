@@ -1,4 +1,4 @@
-import { IntermediateInterface } from "../interfaces/intermediate.interface";
+import { IntermediateInterface } from "../interfaces";
 import { isIntermediate } from "./is-intermediate";
 
 export class Intermediate<T = {}> implements IntermediateInterface {

@@ -1,4 +1,4 @@
-import { SyncPipeline } from "../src/sync-pipeline";
+import { SyncPipeline } from "../src";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 

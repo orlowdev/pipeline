@@ -1,5 +1,4 @@
-import { IntermediatePipeline } from "../src/intermediate-pipeline";
-import { IntermediateInterface } from "../src/interfaces/intermediate.interface";
+import { IntermediateInterface, IntermediatePipeline } from "../src";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 

@@ -1,6 +1,5 @@
 import { BasePipeline } from "./base-pipeline";
-import { MiddlewareInterface } from "./interfaces/middleware.interface";
-import { IntermediateInterface } from "./interfaces/intermediate.interface";
+import { IntermediateInterface, MiddlewareInterface } from "./interfaces";
 
 /**
  * Pipeline is an inverted Monoid that stores an array of middleware functions to be applied to data passed as

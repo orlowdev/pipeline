@@ -1,5 +1,4 @@
-import { PipelineInterface, PipelineStaticInterface } from "./interfaces/pipeline.interface";
-import { MiddlewareInterface } from "./interfaces/middleware.interface";
+import { MiddlewareInterface, PipelineInterface, PipelineStaticInterface } from "./interfaces";
 
 /**
  * Shared pipeline code.

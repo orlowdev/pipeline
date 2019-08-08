@@ -1,4 +1,4 @@
-import { Pipeline } from "../src/pipeline";
+import { Pipeline } from "../src";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
