@@ -51,7 +51,13 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
    */
   public async process(ctx: TContext): Promise<TContext> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: IntermediateInterface | any = typeof ctx == "object" ? { ...ctx } : ctx;
+    let result: IntermediateInterface | any;
+
+    if (typeof ctx != "object") {
+      result = ctx;
+    } else {
+      result = Array.isArray(ctx) ? [...ctx] : { ...ctx };
+    }
 
     for (let i = 0; i < this._middleware.length; i++) {
       if (this._middleware[i] == null) {

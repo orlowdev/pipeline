@@ -18,6 +18,17 @@ describe("Pipeline", () => {
       expect(await Pipeline.from([mw1, amw1]).process(1)).toEqual(6);
     });
 
+    it("should shallow-copy context if it was an object", async () => {
+      const int = { intermediate: 1 };
+      expect(await Pipeline.from([amw1, mw1]).process(int)).not.toBe(int);
+    });
+
+    it("should shallow-copy context if it was an array", async () => {
+      const test = [1, 2, 3];
+      expect(await Pipeline.from([]).process(test)).toEqual(test);
+      expect(await Pipeline.from([]).process(test)).not.toBe(test);
+    });
+
     it("should do nothing if array of Middleware is empty", async () => {
       expect(await Pipeline.from([]).process(1)).toEqual(1);
     });

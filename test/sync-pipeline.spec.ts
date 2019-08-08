@@ -18,6 +18,18 @@ describe("SyncPipeline", () => {
       expect(SyncPipeline.from([mw1, mw4]).process(1)).toEqual(6);
     });
 
+    it("should shallow-copy context if it was an object", () => {
+      const int = { intermediate: 1 };
+      expect(SyncPipeline.from([]).process(int)).toEqual(int);
+      expect(SyncPipeline.from([]).process(int)).not.toBe(int);
+    });
+
+    it("should shallow-copy context if it was an array", () => {
+      const test = [1, 2, 3];
+      expect(SyncPipeline.from([]).process(test)).toEqual(test);
+      expect(SyncPipeline.from([]).process(test)).not.toBe(test);
+    });
+
     it("should do nothing if array of Middleware is empty", () => {
       expect(SyncPipeline.from([]).process(1)).toEqual(1);
     });

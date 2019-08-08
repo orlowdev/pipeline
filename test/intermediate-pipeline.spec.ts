@@ -25,6 +25,12 @@ describe("IntermediatePipeline", () => {
       expect(await IntermediatePipeline.from([amw1, mw1]).process(int)).not.toBe(int);
     });
 
+    it("should shallow-copy context if it was an array", async () => {
+      const test = [1, 2, 3];
+      expect(await IntermediatePipeline.from([]).process(test)).toEqual(test);
+      expect(await IntermediatePipeline.from([]).process(test)).not.toBe(test);
+    });
+
     it("should refer to values of properties other than intermediate as immutable outside pipeline", async () => {
       const ctx: Testable = { test: 1, intermediate: 0 };
       type Testable = IntermediateInterface<number> & { test: number };

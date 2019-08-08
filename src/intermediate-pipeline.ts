@@ -99,7 +99,13 @@ export class IntermediatePipeline<
    */
   public async process(ctx: TContext | TWrapper): Promise<TContext> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: IntermediateInterface | any = typeof ctx == "object" && ctx != null ? { ...ctx } : ctx;
+    let result: IntermediateInterface | any;
+
+    if (typeof ctx != "object" || ctx == null) {
+      result = ctx;
+    } else {
+      result = Array.isArray(ctx) ? [...ctx] : { ...ctx };
+    }
 
     if (!Intermediate.isIntermediate(result)) {
       result = Intermediate.of(result);
