@@ -1,5 +1,5 @@
 import { BasePipeline } from "./base-pipeline";
-import { IntermediateInterface, MiddlewareInterface } from "./interfaces";
+import { MiddlewareInterface } from "./interfaces";
 
 /**
  * Pipeline is an inverted Monoid that stores an array of middleware functions to be applied to data passed as
@@ -47,7 +47,7 @@ export class SyncPipeline<TContext> extends BasePipeline<TContext> {
    */
   public process(ctx: TContext): TContext {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: IntermediateInterface | any;
+    let result: TContext | any;
 
     if (typeof ctx != "object") {
       result = ctx;
