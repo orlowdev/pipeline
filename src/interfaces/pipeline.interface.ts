@@ -6,7 +6,7 @@ import { MonoidInterface, MonoidStaticInterface } from "./monoid.interface";
  *
  * @interface PipelineInterface
  */
-export interface PipelineInterface<TContext = {}> extends MonoidInterface<TContext> {
+export interface PipelineInterface<TContext, TResult, TReserved> extends MonoidInterface<TContext> {
   /**
    * Pipeline has no middleware flag.
    */
@@ -14,20 +14,26 @@ export interface PipelineInterface<TContext = {}> extends MonoidInterface<TConte
   /**
    * Array of internally stored middleware.
    */
-  middleware: MiddlewareInterface<TContext>[];
+  middleware: MiddlewareInterface<TContext, TResult>[];
 
   /**
    * Concat current middleware with argument pipeline of the same generic type.
    * @param o
    */
-  concat(o: PipelineInterface<TContext>): PipelineInterface<TContext>;
+  concat<TNewResult>(o: PipelineInterface<TResult, TNewResult, TReserved>);
+
+  /**
+   * Create a new PipelineInterface with Middleware provided as an argument appended to the end of the Middleware list.
+   * @param middleware
+   */
+  pipe<TNewResult>(middleware: MiddlewareInterface<TResult, TNewResult>);
 
   /**
    * Sequentially call middleware functions stored inside Pipeline starting with context provided as an argument.
    * @param ctx
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  process(ctx: TContext): any;
+  process(ctx: TReserved): any;
 }
 
 /**
@@ -35,21 +41,21 @@ export interface PipelineInterface<TContext = {}> extends MonoidInterface<TConte
  *
  * @interface PipelineStaticInterface
  */
-export interface PipelineStaticInterface<T = {}> extends MonoidStaticInterface {
+export interface PipelineStaticInterface extends MonoidStaticInterface {
   /**
    * Pointer interface for creating a Pipeline from array of Middleware.
    * @param middleware - Array of Middleware functions.
    */
-  from<T>(middleware: MiddlewareInterface<T>[]): PipelineInterface<T>;
+  from<T, K, V>(middleware: MiddlewareInterface<T, K>[]): PipelineInterface<T, K, V>;
 
   /**
    * Pointer interface for lifting given middleware functions to a Pipeline.
    * @param middleware - n Middleware functions.
    */
-  of<T>(...middleware: MiddlewareInterface<T>[]): PipelineInterface<T>;
+  of<T, K, V>(middleware: MiddlewareInterface<T, K>): PipelineInterface<T, K, V>;
 
   /**
    * Pointer interface for creating an empty IntermediatePipeline.
    */
-  empty<T>(): PipelineInterface<T>;
+  empty(): PipelineInterface<unknown, unknown, unknown>;
 }

@@ -31,8 +31,8 @@ describe("IntermediatePipeline", () => {
     });
 
     it("should refer to values of properties other than intermediate as immutable outside pipeline", async () => {
-      const ctx: Testable = { test: 1, intermediate: 0 };
       type Testable = IntermediateInterface<number> & { test: number };
+      const ctx: Testable = { test: 1, intermediate: 0 };
       await IntermediatePipeline.of((ctx: Testable) => {
         ctx.test = 2;
       }).process(ctx);
@@ -57,7 +57,9 @@ describe("IntermediatePipeline", () => {
 
     it("should throw error if the pipeline errored", async () => {
       try {
-        await IntermediatePipeline.of<string>(ctx => ctx.intermediate.toUpperCase()).process((1 as unknown) as string);
+        await IntermediatePipeline.of<string, any>(ctx => ctx.intermediate.toUpperCase()).process(
+          (1 as unknown) as string,
+        );
       } catch (e) {
         expect(e).toBeInstanceOf(TypeError);
       }
@@ -84,9 +86,9 @@ describe("IntermediatePipeline", () => {
 
   describe("Semigroup", () => {
     it("ASSOCIATIVITY a.concat(b).concat(c) is equivalent to a.concat(b.concat(c))", async () => {
-      const a = IntermediatePipeline.of<number>(x => x.intermediate + 1);
-      const b = IntermediatePipeline.from<number>([x => x.intermediate + 2]);
-      const c = IntermediatePipeline.from<number>([x => x.intermediate + 3]);
+      const a = IntermediatePipeline.of<number, number>(x => x.intermediate + 1);
+      const b = IntermediatePipeline.from<number, number>([x => x.intermediate + 2]);
+      const c = IntermediatePipeline.from<number, number>([x => x.intermediate + 3]);
 
       expect(
         await a
@@ -99,12 +101,12 @@ describe("IntermediatePipeline", () => {
 
   describe("Monoid", () => {
     it("RIGHT IDENTITY m.concat(M.empty()) is equivalent to m", async () => {
-      const m = IntermediatePipeline.from<string>([x => Number.parseInt(x.intermediate)]);
+      const m = IntermediatePipeline.from<string, string>([x => Number.parseInt(x.intermediate)]);
       expect(await m.concat(IntermediatePipeline.empty()).process("3")).toEqual(await m.process("3"));
     });
 
     it("LEFT IDENTITY M.empty().concat(m) is equivalent to m", async () => {
-      const m = IntermediatePipeline.from<string>([x => Number.parseInt(x.intermediate)]);
+      const m = IntermediatePipeline.from<string, string>([x => Number.parseInt(x.intermediate)]);
       expect(
         await IntermediatePipeline.empty()
           .concat(m)

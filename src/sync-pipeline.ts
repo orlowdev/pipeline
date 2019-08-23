@@ -10,28 +10,53 @@ import { MiddlewareInterface } from "./interfaces";
  *
  * **NOTE**: SyncPipeline creates a shallow copy of the context argument before passing it to the first middleware.
  */
-export class SyncPipeline<TContext> extends BasePipeline<TContext> {
+export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TContext, TResult, TReserved> {
   /**
    * Pointer interface for lifting given middleware functions to a SyncPipeline.
    * @param middleware - n Middleware functions.
    */
-  public static of<T>(...middleware: MiddlewareInterface<T>[]): SyncPipeline<T> {
-    return new SyncPipeline<T>(middleware);
+  public static of<T, TResult, TReserved = T>(
+    middleware: MiddlewareInterface<T, TResult>,
+  ): SyncPipeline<T, TResult, TReserved> {
+    return new SyncPipeline([middleware]);
   }
 
   /**
    * Pointer interface for creating a SyncPipeline from array of Middleware.
    * @param middleware - Array of Middleware functions.
    */
-  public static from<T>(middleware: MiddlewareInterface<T>[]): SyncPipeline<T> {
-    return new SyncPipeline<T>(middleware);
+  public static from<T, TResult, TReserved = T>(
+    middleware: MiddlewareInterface<any, any>[],
+  ): SyncPipeline<T, TResult, TReserved> {
+    return new SyncPipeline(middleware);
   }
 
   /**
    * Pointer interface for creating an empty SyncPipeline.
    */
-  public static empty<T>(): SyncPipeline<T> {
-    return new SyncPipeline<T>([]);
+  public static empty<T, TResult, TReserved = T>(): SyncPipeline<T, TResult, TReserved> {
+    return new SyncPipeline([]);
+  }
+
+  /**
+   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
+   * argument.
+   * @param o
+   */
+  public concat<TNewResult>(
+    o: SyncPipeline<TResult, TNewResult, TReserved>,
+  ): SyncPipeline<TResult, TNewResult, TReserved> {
+    return SyncPipeline.from(this.middleware.concat(o.middleware as any) as any);
+  }
+
+  /**
+   * Create a new SyncPipeline with Middleware provided as an argument appended to the end of the Middleware list.
+   * @param middleware
+   */
+  public pipe<TNewResult>(
+    middleware: MiddlewareInterface<TResult, TNewResult>,
+  ): SyncPipeline<TResult, TNewResult, TReserved> {
+    return SyncPipeline.from([...this.middleware, middleware]);
   }
 
   /**
@@ -45,9 +70,9 @@ export class SyncPipeline<TContext> extends BasePipeline<TContext> {
    *
    * @param ctx
    */
-  public process(ctx: TContext): TContext {
+  public process(ctx: TReserved): TResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: TContext | any;
+    let result: TReserved | any;
 
     if (typeof ctx != "object") {
       result = ctx;
