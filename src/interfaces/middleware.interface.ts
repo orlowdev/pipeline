@@ -3,7 +3,7 @@
  *
  * @interface MiddlewareInterface
  */
-export interface MiddlewareInterface<TContext = {}> {
+export interface MiddlewareInterface<TContext, TResult> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (ctx: TContext): any;
+  (ctx: TContext): TResult;
 }

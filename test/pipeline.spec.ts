@@ -3,12 +3,24 @@ import { Pipeline } from "../src";
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 describe("Pipeline", () => {
-  describe("process", () => {
-    const mw1 = x => x + 1;
-    const mw2 = x => x + 2;
-    const mw3 = x => x + 3;
-    const amw1 = x => new Promise(resolve => setTimeout(() => resolve(x + 4), 1));
+  const mw1 = x => x + 1;
+  const mw2 = x => x + 2;
+  const mw3 = x => x + 3;
+  const amw1 = (x: number): Promise<number> => new Promise(resolve => setTimeout(() => resolve(x + 4), 1));
 
+  describe("pipe", () => {
+    it("should allow extending Pipelines", async () => {
+      expect(await Pipeline.from([amw1, mw1, mw2, mw3]).process(1)).toEqual(
+        await Pipeline.of(amw1)
+          .pipe(mw1)
+          .pipe(mw2)
+          .pipe(mw3)
+          .process(1),
+      );
+    });
+  });
+
+  describe("process", () => {
     it("should consecutively run synchronous code", async () => {
       expect(await Pipeline.from([mw1, mw2, mw3]).process(1)).toEqual(7);
     });
@@ -31,10 +43,6 @@ describe("Pipeline", () => {
 
     it("should do nothing if array of Middleware is empty", async () => {
       expect(await Pipeline.from([]).process(1)).toEqual(1);
-    });
-
-    it("should preserve context if nothing was returned", async () => {
-      expect(await Pipeline.from<number>([() => {}, ctx => ctx + 1]).process(1)).toEqual(2);
     });
 
     it("should throw TypeError if pipeline was created with a non-function", async () => {
@@ -63,7 +71,7 @@ describe("Pipeline", () => {
 
     it("should throw error if the pipeline errored", async () => {
       try {
-        await Pipeline.of<string>(ctx => ctx.toUpperCase()).process((1 as unknown) as string);
+        await Pipeline.of<string, any>(ctx => ctx.toUpperCase()).process((1 as unknown) as string);
       } catch (e) {
         expect(e).toBeInstanceOf(TypeError);
       }
@@ -90,9 +98,9 @@ describe("Pipeline", () => {
 
   describe("Semigroup", () => {
     it("ASSOCIATIVITY a.concat(b).concat(c) is equivalent to a.concat(b.concat(c))", async () => {
-      const a = Pipeline.of<number>(x => x + 1);
-      const b = Pipeline.from<number>([x => x + 2]);
-      const c = Pipeline.from<number>([x => x + 3]);
+      const a = Pipeline.of<number, number>(x => x + 1);
+      const b = Pipeline.from<number, number>([x => x + 2]);
+      const c = Pipeline.from<number, number>([x => x + 3]);
 
       expect(
         await a
@@ -105,12 +113,12 @@ describe("Pipeline", () => {
 
   describe("Monoid", () => {
     it("RIGHT IDENTITY m.concat(M.empty()) is equivalent to m", async () => {
-      const m = Pipeline.from<string>([x => Number.parseInt(x)]);
+      const m = Pipeline.from<string, string>([x => Number.parseInt(x)]);
       expect(await m.concat(Pipeline.empty()).process("3")).toEqual(await m.process("3"));
     });
 
     it("LEFT IDENTITY M.empty().concat(m) is equivalent to m", async () => {
-      const m = Pipeline.from<string>([x => Number.parseInt(x)]);
+      const m = Pipeline.from<string, string>([x => Number.parseInt(x)]);
       expect(
         await Pipeline.empty()
           .concat(m)

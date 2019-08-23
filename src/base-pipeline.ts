@@ -3,24 +3,25 @@ import { MiddlewareInterface, PipelineInterface, PipelineStaticInterface } from 
 /**
  * Shared pipeline code.
  */
-export abstract class BasePipeline<TContext> implements PipelineInterface<TContext> {
+export abstract class BasePipeline<TContext, TResult, TReserved>
+  implements PipelineInterface<TContext, TResult, TReserved> {
   /**
    * Internally stored array of Middleware functions.
    */
-  protected readonly _middleware: MiddlewareInterface<TContext>[];
+  protected readonly _middleware: MiddlewareInterface<TContext, TResult>[];
 
   /**
    * @constructor
    * @param middleware
    */
-  protected constructor(middleware: MiddlewareInterface<TContext>[]) {
+  protected constructor(middleware: MiddlewareInterface<TContext, TResult>[]) {
     this._middleware = middleware;
   }
 
   /**
    * Internally stored array of Middleware functions.
    */
-  public get middleware(): MiddlewareInterface<TContext>[] {
+  public get middleware(): MiddlewareInterface<TContext, TResult>[] {
     return this._middleware;
   }
 
@@ -34,34 +35,38 @@ export abstract class BasePipeline<TContext> implements PipelineInterface<TConte
   /**
    * Array of Middleware functions stored inside Pipeline.
    */
-  public toArray(): MiddlewareInterface<TContext>[] {
+  public toArray(): MiddlewareInterface<TContext, TResult>[] {
     return this.middleware;
-  }
-
-  /**
-   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
-   * argument.
-   * @param o
-   */
-  public concat(o: PipelineInterface<TContext>): PipelineInterface<TContext> {
-    return ((this.constructor as unknown) as PipelineStaticInterface<TContext>).from(
-      this.middleware.concat(o.middleware),
-    );
   }
 
   /**
    * Pointer interface for creating an empty IntermediatePipeline.
    */
-  public empty(): PipelineInterface<TContext> {
-    return ((this.constructor as unknown) as PipelineStaticInterface<TContext>).empty();
+  public empty(): PipelineInterface<unknown, unknown, unknown> {
+    return ((this.constructor as unknown) as PipelineStaticInterface).empty();
   }
 
   /**
+   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
+   * argument.
+   * @abstract
+   * @param o
+   */
+  public abstract concat<TNewResult>(o: PipelineInterface<TResult, TNewResult, TReserved>);
+
+  /**
+   * Create a new Pipeline with Middleware provided as an argument appended to the end of the Middleware list.
+   * @abstract
+   * @param middleware
+   */
+  public abstract pipe<TNewResult>(middleware: MiddlewareInterface<TResult, TNewResult>);
+
+  /**
    * Sequentially call middleware functions stored inside IntermediatePipeline starting with context provided as an
-   * argument. If `ctx` argument is not Intermediate, it is wrapped up with `Intermediate.of`.
+   * argument.
    * @abstract
    * @param ctx
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public abstract process(ctx: TContext): any;
+  public abstract process(ctx: TReserved): any;
 }

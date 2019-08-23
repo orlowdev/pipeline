@@ -40,43 +40,104 @@ import { Intermediate } from "./helpers";
  * **NOTE**: IntermediatePipeline creates a shallow copy of the context argument. If you pass objects along with
  * intermediate, they will be MUTABLE!
  */
-export class IntermediatePipeline<
-  TContext,
-  TWrapper extends IntermediateInterface = IntermediateInterface<TContext>
-> extends BasePipeline<TContext> {
+export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipeline<TContext, TResult, TReserved> {
   /**
    * Pointer interface for lifting given middleware functions to a IntermediatePipeline.
    * @param middleware - n Middleware functions.
    */
-  public static of<TContext, TWrapper extends IntermediateInterface<TContext> = IntermediateInterface<TContext>>(
-    ...middleware: MiddlewareInterface<IntermediateInterface<TContext>>[]
-  ): IntermediatePipeline<TContext> {
-    return new IntermediatePipeline<TContext>(middleware);
+  public static of<
+    TContext,
+    TResult,
+    TReserved = TContext extends IntermediateInterface<infer U>
+      ? U | TContext
+      : TContext | IntermediateInterface<TContext>
+  >(
+    middleware: MiddlewareInterface<
+      TContext extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TContext>,
+      TResult
+    >,
+  ): IntermediatePipeline<
+    TContext extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TContext>,
+    TResult extends Promise<infer U> ? U : TResult,
+    TReserved
+  > {
+    // @ts-ignore
+    return new IntermediatePipeline([middleware]);
   }
 
   /**
    * Pointer interface for creating a IntermediatePipeline from array of Middleware.
    * @param middleware - Array of Middleware functions.
    */
-  public static from<TContext, TWrapper extends IntermediateInterface<TContext> = IntermediateInterface<TContext>>(
-    middleware: MiddlewareInterface<IntermediateInterface<TContext>>[],
-  ): IntermediatePipeline<TContext> {
-    return new IntermediatePipeline<TContext>(middleware);
+  public static from<
+    TContext,
+    TResult,
+    TReserved = TContext extends IntermediateInterface<infer U> ? U | TContext : TContext
+  >(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    middleware: MiddlewareInterface<any, any>[],
+  ): IntermediatePipeline<
+    TContext extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TContext>,
+    TResult extends Promise<infer U> ? U : TResult,
+    TReserved
+  > {
+    return new IntermediatePipeline(middleware);
   }
 
   /**
    * Pointer interface for creating an empty IntermediatePipeline.
    */
-  public static empty<TContext>(): IntermediatePipeline<TContext> {
-    return new IntermediatePipeline<TContext>([]);
+  public static empty<TContext, TResult, TReserved>(): IntermediatePipeline<TContext, TResult, TReserved> {
+    return new IntermediatePipeline([]);
   }
 
   /**
    * @constructor
    * @param middleware - Array of Middleware functions.
    */
-  public constructor(middleware: MiddlewareInterface<TWrapper>[]) {
-    super(middleware as MiddlewareInterface<{}>[]);
+  public constructor(middleware: MiddlewareInterface<TContext, TResult>[]) {
+    super(middleware);
+  }
+
+  /**
+   * Create new IntermediatePipeline containing Middleware functions of both current Pipeline and the Pipeline passed
+   * as an
+   * argument.
+   * @param o
+   */
+  // @ts-ignore
+  public concat<TNewResult>(
+    o: IntermediatePipeline<
+      TResult extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TResult>,
+      TNewResult,
+      TReserved
+    >,
+  ): IntermediatePipeline<
+    TResult extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TResult>,
+    TNewResult extends Promise<infer U> ? U : TNewResult,
+    TReserved
+  > {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return IntermediatePipeline.from(this.middleware.concat(o.middleware as MiddlewareInterface<any, any>[])) as any;
+  }
+
+  /**
+   * Create a new Pipeline with Middleware provided as an argument appended to the end of the Middleware list.
+   * @param middleware
+   */
+  // @ts-ignore
+  public pipe<TNewResult>(
+    middleware: MiddlewareInterface<
+      TResult extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TResult>,
+      TNewResult
+    >,
+  ): IntermediatePipeline<
+    TResult extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TResult>,
+    TNewResult extends Promise<infer U> ? U : TNewResult,
+    TReserved
+  > {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return IntermediatePipeline.from([...this.middleware, middleware]) as any;
   }
 
   /**
@@ -84,9 +145,6 @@ export class IntermediatePipeline<
    * argument. If `ctx` argument is not Intermediate, it is wrapped up with `Intermediate.of`.
    *
    * Values returned from middleware functions will be assigned to `ctx.intermediate`.
-   *
-   * If previous middleware function returned nullable value (**null** or **undefined**), the `ctx` object will be
-   * passed to the next middleware unmodified.
    *
    * If middleware that is currently being processed returns a Promise, it will be resolved before being passed to
    * the next middleware.
@@ -96,7 +154,7 @@ export class IntermediatePipeline<
    *
    * @param ctx - `intermediate` contents or wrapper containing `intermediate`.
    */
-  public async process(ctx: TContext | TWrapper): Promise<TContext> {
+  public async process(ctx: TReserved): Promise<TResult> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: IntermediateInterface | any;
 
@@ -115,11 +173,7 @@ export class IntermediatePipeline<
         throw new TypeError("Middleware must be a function");
       }
 
-      const done = await this._middleware[i](result);
-
-      if (done != null) {
-        result.intermediate = done;
-      }
+      result.intermediate = await this._middleware[i](result);
     }
 
     return result.intermediate;

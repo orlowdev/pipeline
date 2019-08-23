@@ -3,12 +3,24 @@ import { SyncPipeline } from "../src";
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 describe("SyncPipeline", () => {
-  describe("process", () => {
-    const mw1 = x => x + 1;
-    const mw2 = x => x + 2;
-    const mw3 = x => x + 3;
-    const mw4 = x => x + 4;
+  const mw1 = x => x + 1;
+  const mw2 = x => x + 2;
+  const mw3 = x => x + 3;
+  const mw4 = x => x + 4;
 
+  describe("pipe", () => {
+    it("should allow extending Pipelines", async () => {
+      expect(await SyncPipeline.from([mw1, mw2, mw3, mw4]).process(1)).toEqual(
+        await SyncPipeline.of(mw1)
+          .pipe(mw2)
+          .pipe(mw3)
+          .pipe(mw4)
+          .process(1),
+      );
+    });
+  });
+
+  describe("process", () => {
     it("should consecutively run synchronous code", () => {
       expect(SyncPipeline.from([mw1, mw2, mw3]).process(1)).toEqual(7);
     });
@@ -34,13 +46,9 @@ describe("SyncPipeline", () => {
       expect(SyncPipeline.from([]).process(1)).toEqual(1);
     });
 
-    it("should preserve context if nothing was returned", () => {
-      expect(SyncPipeline.from<number>([() => {}, ctx => ctx + 1]).process(1)).toEqual(2);
-    });
-
     it("should throw TypeError if pipeline was created with a non-function", () => {
       try {
-        SyncPipeline.of<string>(null).process((1 as unknown) as string);
+        SyncPipeline.of<string, any>(null).process((1 as unknown) as string);
       } catch (e) {
         expect(e).toBeInstanceOf(TypeError);
       }
@@ -64,7 +72,7 @@ describe("SyncPipeline", () => {
 
     it("should throw error if the pipeline errored", () => {
       try {
-        SyncPipeline.of<string>(ctx => ctx.toUpperCase()).process((1 as unknown) as string);
+        SyncPipeline.of<string, any>(ctx => ctx.toUpperCase()).process((1 as unknown) as string);
       } catch (e) {
         expect(e).toBeInstanceOf(TypeError);
       }
@@ -91,9 +99,9 @@ describe("SyncPipeline", () => {
 
   describe("Semigroup", () => {
     it("ASSOCIATIVITY a.concat(b).concat(c) is equivalent to a.concat(b.concat(c))", () => {
-      const a = SyncPipeline.of<number>(x => x + 1);
-      const b = SyncPipeline.from<number>([x => x + 2]);
-      const c = SyncPipeline.from<number>([x => x + 3]);
+      const a = SyncPipeline.of<number, number>(x => x + 1);
+      const b = SyncPipeline.from<number, number>([x => x + 2]);
+      const c = SyncPipeline.from<number, number>([x => x + 3]);
 
       expect(
         a
@@ -106,12 +114,12 @@ describe("SyncPipeline", () => {
 
   describe("Monoid", () => {
     it("RIGHT IDENTITY m.concat(M.empty()) is equivalent to m", () => {
-      const m = SyncPipeline.from<string>([x => Number.parseInt(x)]);
+      const m = SyncPipeline.from<string, string>([x => Number.parseInt(x)]);
       expect(m.concat(SyncPipeline.empty()).process("3")).toEqual(m.process("3"));
     });
 
     it("LEFT IDENTITY M.empty().concat(m) is equivalent to m", () => {
-      const m = SyncPipeline.from<string>([x => Number.parseInt(x)]);
+      const m = SyncPipeline.from<string, string>([x => Number.parseInt(x)]);
       expect(
         SyncPipeline.empty()
           .concat(m)

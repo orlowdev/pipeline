@@ -7,28 +7,56 @@ import { MiddlewareInterface } from "./interfaces";
  *
  * **NOTE**: Pipeline creates a shallow copy of the context argument before passing it to the first middleware.
  */
-export class Pipeline<TContext> extends BasePipeline<TContext> {
+export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContext, TResult, TReserved> {
   /**
-   * Pointer interface for lifting given middleware functions to a Pipeline.
+   * Pointer interface for lifting given middleware function to a Pipeline.
    * @param middleware - n Middleware functions.
    */
-  public static of<T>(...middleware: MiddlewareInterface<T>[]): Pipeline<T> {
-    return new Pipeline<T>(middleware);
+  public static of<TContext, TResult, TReserved = TContext>(
+    middleware: MiddlewareInterface<TContext, TResult>,
+  ): Pipeline<TContext, TResult extends Promise<infer U> ? U : TResult, TReserved> {
+    // @ts-ignore
+    return new Pipeline<TContext, TResult extends Promise<infer U> ? U : TResult, TReserved>([middleware]);
   }
 
   /**
    * Pointer interface for creating a Pipeline from array of Middleware.
    * @param middleware - Array of Middleware functions.
    */
-  public static from<T>(middleware: MiddlewareInterface<T>[]): Pipeline<T> {
-    return new Pipeline<T>(middleware);
+  public static from<TContext, TResult, TReserved = TContext>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    middleware: MiddlewareInterface<any, any>[],
+  ): Pipeline<TContext, TResult, TReserved> {
+    return new Pipeline(middleware);
   }
 
   /**
    * Pointer interface for creating an empty Pipeline.
    */
-  public static empty<T>(): Pipeline<T> {
-    return new Pipeline<T>([]);
+  public static empty<TContext, TResult, TReserved>(): Pipeline<TContext, TResult, TReserved> {
+    return new Pipeline([]);
+  }
+
+  /**
+   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
+   * argument.
+   * @param o
+   */
+  public concat<TNewResult>(
+    o: Pipeline<TResult, TNewResult, TReserved>,
+  ): Pipeline<TResult, TNewResult extends Promise<infer U> ? U : TNewResult, TReserved> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Pipeline.from(this.middleware.concat(o.middleware as MiddlewareInterface<any, any>[]));
+  }
+
+  /**
+   * Create a new Pipeline with Middleware provided as an argument appended to the end of the Middleware list.
+   * @param middleware
+   */
+  public pipe<TNewResult>(
+    middleware: MiddlewareInterface<TResult, TNewResult>,
+  ): Pipeline<TResult, TNewResult extends Promise<infer U> ? U : TNewResult, TReserved> {
+    return Pipeline.from([...this.middleware, middleware]);
   }
 
   /**
@@ -36,9 +64,6 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
    * argument.
    *
    * Values returned from middleware functions will be passed to the next middleware as an argument.
-   *
-   * If previous middleware function returned nullable value (**null** or **undefined**), the `ctx` will be
-   * passed to the next middleware unmodified.
    *
    * If middleware that is currently being processed returns a Promise, it will be resolved before being passed to
    * the next middleware.
@@ -48,7 +73,7 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
    *
    * @param ctx
    */
-  public async process(ctx: TContext): Promise<TContext> {
+  public async process(ctx: TReserved): Promise<TResult> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: TContext | any;
 
@@ -63,11 +88,7 @@ export class Pipeline<TContext> extends BasePipeline<TContext> {
         throw new TypeError("Middleware must be a function");
       }
 
-      const done = await this._middleware[i](result);
-
-      if (done != null) {
-        result = done;
-      }
+      result = await this._middleware[i](result);
     }
 
     return result;

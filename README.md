@@ -62,12 +62,15 @@ Pipeline.from([
 ```typescript
 import { Pipeline } from "@priestine/pipeline";
 
-const logToConsole = (answer: string) => console.log(answer);
 const isOdd = (num: number) => num % 2 == 0;
 const negate = (f: Function) => (x: any) => !f(x);
-const filterOutOddNumbers = (nums: number[]) => nums.filter(negate(isOdd));
+const mockFetch = (x: string): Promise<number[]> => new Promise(resolve => resolve([1, 2, 3, 4, 5]));
+const filterOutOddNumbers = (nums: number[]): number[] => nums.filter(negate(isOdd));
+const logToConsole = (answer: number[]): void => console.log(answer);
 
-Pipeline.from([fetch, filterOutOddNumbers, logToConsole])
+Pipeline.of(mockFetch)
+  .pipe(filterOutOddNumbers)
+  .pipe(logToConsole)
   .process("https://example.com/arbitrary-numbers")
   .catch(console.error);
 ```
