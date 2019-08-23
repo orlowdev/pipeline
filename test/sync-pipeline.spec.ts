@@ -3,12 +3,24 @@ import { SyncPipeline } from "../src";
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 describe("SyncPipeline", () => {
-  describe("process", () => {
-    const mw1 = x => x + 1;
-    const mw2 = x => x + 2;
-    const mw3 = x => x + 3;
-    const mw4 = x => x + 4;
+  const mw1 = x => x + 1;
+  const mw2 = x => x + 2;
+  const mw3 = x => x + 3;
+  const mw4 = x => x + 4;
 
+  describe("pipe", () => {
+    it("should allow extending Pipelines", async () => {
+      expect(await SyncPipeline.from([mw1, mw2, mw3, mw4]).process(1)).toEqual(
+        await SyncPipeline.of(mw1)
+          .pipe(mw2)
+          .pipe(mw3)
+          .pipe(mw4)
+          .process(1),
+      );
+    });
+  });
+
+  describe("process", () => {
     it("should consecutively run synchronous code", () => {
       expect(SyncPipeline.from([mw1, mw2, mw3]).process(1)).toEqual(7);
     });

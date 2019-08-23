@@ -3,12 +3,24 @@ import { Pipeline } from "../src";
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 describe("Pipeline", () => {
-  describe("process", () => {
-    const mw1 = x => x + 1;
-    const mw2 = x => x + 2;
-    const mw3 = x => x + 3;
-    const amw1 = x => new Promise(resolve => setTimeout(() => resolve(x + 4), 1));
+  const mw1 = x => x + 1;
+  const mw2 = x => x + 2;
+  const mw3 = x => x + 3;
+  const amw1 = (x: number): Promise<number> => new Promise(resolve => setTimeout(() => resolve(x + 4), 1));
 
+  describe("pipe", () => {
+    it("should allow extending Pipelines", async () => {
+      expect(await Pipeline.from([amw1, mw1, mw2, mw3]).process(1)).toEqual(
+        await Pipeline.of(amw1)
+          .pipe(mw1)
+          .pipe(mw2)
+          .pipe(mw3)
+          .process(1),
+      );
+    });
+  });
+
+  describe("process", () => {
     it("should consecutively run synchronous code", async () => {
       expect(await Pipeline.from([mw1, mw2, mw3]).process(1)).toEqual(7);
     });

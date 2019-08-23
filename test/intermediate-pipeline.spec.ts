@@ -3,13 +3,25 @@ import { IntermediateInterface, IntermediatePipeline } from "../src";
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 describe("IntermediatePipeline", () => {
-  describe("process", () => {
-    const mw1 = x => x.intermediate + 1;
-    const mw2 = x => x.intermediate + 2;
-    const mw3 = x => x.intermediate + 3;
-    const callback = x => (resolve: Function) => setTimeout(() => resolve(x.intermediate + 4), 0);
-    const amw1 = x => new Promise(callback(x));
+  const mw1 = x => x.intermediate + 1;
+  const mw2 = x => x.intermediate + 2;
+  const mw3 = x => x.intermediate + 3;
+  const callback = x => (resolve: Function) => setTimeout(() => resolve(x.intermediate + 4), 0);
+  const amw1 = (x: IntermediateInterface<number>): Promise<number> => new Promise(callback(x));
 
+  describe("pipe", () => {
+    it("should allow extending Pipelines", async () => {
+      expect(await IntermediatePipeline.from([amw1, mw1, mw2, mw3]).process(1)).toEqual(
+        await IntermediatePipeline.of(amw1)
+          .pipe(mw1)
+          .pipe(mw2)
+          .pipe(mw3)
+          .process(1),
+      );
+    });
+  });
+
+  describe("process", () => {
     it("should consecutively run synchronous code", async () => {
       expect(await IntermediatePipeline.from([mw1, mw2, mw3]).process(1)).toEqual(7);
     });
