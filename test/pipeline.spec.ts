@@ -45,10 +45,6 @@ describe("Pipeline", () => {
       expect(await Pipeline.from([]).process(1)).toEqual(1);
     });
 
-    it("should preserve context if nothing was returned", async () => {
-      expect(await Pipeline.from<number, number>([() => {}, ctx => ctx + 1]).process(1)).toEqual(2);
-    });
-
     it("should throw TypeError if pipeline was created with a non-function", async () => {
       try {
         await Pipeline.of(null).process((1 as unknown) as string);

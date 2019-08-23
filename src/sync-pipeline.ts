@@ -26,6 +26,7 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
    * @param middleware - Array of Middleware functions.
    */
   public static from<T, TResult, TReserved = T>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     middleware: MiddlewareInterface<any, any>[],
   ): SyncPipeline<T, TResult, TReserved> {
     return new SyncPipeline(middleware);
@@ -46,7 +47,8 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
   public concat<TNewResult>(
     o: SyncPipeline<TResult, TNewResult, TReserved>,
   ): SyncPipeline<TResult, TNewResult, TReserved> {
-    return SyncPipeline.from(this.middleware.concat(o.middleware as any) as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return SyncPipeline.from(this.middleware.concat(o.middleware as MiddlewareInterface<any, any>[]));
   }
 
   /**
@@ -65,9 +67,6 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
    *
    * Values returned from middleware functions will be passed to the next middleware as an argument.
    *
-   * If previous middleware function returned nullable value (**null** or **undefined**), the `ctx` will be
-   * passed to the next middleware unmodified.
-   *
    * @param ctx
    */
   public process(ctx: TReserved): TResult {
@@ -85,11 +84,7 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
         throw new TypeError("Middleware must be a function");
       }
 
-      const done = this._middleware[i](result);
-
-      if (done != null) {
-        result = done;
-      }
+      result = this._middleware[i](result);
     }
 
     return result;

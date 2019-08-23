@@ -40,19 +40,6 @@ export abstract class BasePipeline<TContext, TResult, TReserved>
   }
 
   /**
-   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
-   * argument.
-   * @param o
-   */
-  public abstract concat<TNewResult>(o: PipelineInterface<TResult, TNewResult, TReserved>);
-
-  /**
-   * Create a new Pipeline with Middleware provided as an argument appended to the end of the Middleware list.
-   * @param middleware
-   */
-  public abstract pipe<TNewResult>(middleware: MiddlewareInterface<TResult, TNewResult>);
-
-  /**
    * Pointer interface for creating an empty IntermediatePipeline.
    */
   public empty(): PipelineInterface<unknown, unknown, unknown> {
@@ -60,8 +47,23 @@ export abstract class BasePipeline<TContext, TResult, TReserved>
   }
 
   /**
+   * Create new Pipeline containing Middleware functions of both current Pipeline and the Pipeline passed as an
+   * argument.
+   * @abstract
+   * @param o
+   */
+  public abstract concat<TNewResult>(o: PipelineInterface<TResult, TNewResult, TReserved>);
+
+  /**
+   * Create a new Pipeline with Middleware provided as an argument appended to the end of the Middleware list.
+   * @abstract
+   * @param middleware
+   */
+  public abstract pipe<TNewResult>(middleware: MiddlewareInterface<TResult, TNewResult>);
+
+  /**
    * Sequentially call middleware functions stored inside IntermediatePipeline starting with context provided as an
-   * argument. If `ctx` argument is not Intermediate, it is wrapped up with `Intermediate.of`.
+   * argument.
    * @abstract
    * @param ctx
    */

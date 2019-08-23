@@ -57,5 +57,5 @@ export interface PipelineStaticInterface extends MonoidStaticInterface {
   /**
    * Pointer interface for creating an empty IntermediatePipeline.
    */
-  empty(): PipelineInterface<unknown, unknown, unknown>;
+  empty<T, K, V>(): PipelineInterface<T, K, V>;
 }

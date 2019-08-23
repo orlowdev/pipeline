@@ -74,6 +74,7 @@ export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipe
     TResult,
     TReserved = TContext extends IntermediateInterface<infer U> ? U | TContext : TContext
   >(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     middleware: MiddlewareInterface<any, any>[],
   ): IntermediatePipeline<
     TContext extends IntermediateInterface<infer U> ? IntermediateInterface<U> : IntermediateInterface<TContext>,
@@ -116,7 +117,8 @@ export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipe
     TNewResult extends Promise<infer U> ? U : TNewResult,
     TReserved
   > {
-    return IntermediatePipeline.from(this.middleware.concat(o.middleware as any) as any) as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return IntermediatePipeline.from(this.middleware.concat(o.middleware as MiddlewareInterface<any, any>[])) as any;
   }
 
   /**
@@ -134,6 +136,7 @@ export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipe
     TNewResult extends Promise<infer U> ? U : TNewResult,
     TReserved
   > {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return IntermediatePipeline.from([...this.middleware, middleware]) as any;
   }
 
@@ -142,9 +145,6 @@ export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipe
    * argument. If `ctx` argument is not Intermediate, it is wrapped up with `Intermediate.of`.
    *
    * Values returned from middleware functions will be assigned to `ctx.intermediate`.
-   *
-   * If previous middleware function returned nullable value (**null** or **undefined**), the `ctx` object will be
-   * passed to the next middleware unmodified.
    *
    * If middleware that is currently being processed returns a Promise, it will be resolved before being passed to
    * the next middleware.
@@ -173,11 +173,7 @@ export class IntermediatePipeline<TContext, TResult, TReserved> extends BasePipe
         throw new TypeError("Middleware must be a function");
       }
 
-      const done = await this._middleware[i](result);
-
-      if (done != null) {
-        result.intermediate = done;
-      }
+      result.intermediate = await this._middleware[i](result);
     }
 
     return result.intermediate;

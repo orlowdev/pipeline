@@ -24,6 +24,7 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
    * @param middleware - Array of Middleware functions.
    */
   public static from<TContext, TResult, TReserved = TContext>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     middleware: MiddlewareInterface<any, any>[],
   ): Pipeline<TContext, TResult, TReserved> {
     return new Pipeline(middleware);
@@ -44,7 +45,8 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
   public concat<TNewResult>(
     o: Pipeline<TResult, TNewResult, TReserved>,
   ): Pipeline<TResult, TNewResult extends Promise<infer U> ? U : TNewResult, TReserved> {
-    return Pipeline.from(this.middleware.concat(o.middleware as any) as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Pipeline.from(this.middleware.concat(o.middleware as MiddlewareInterface<any, any>[]));
   }
 
   /**
@@ -62,9 +64,6 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
    * argument.
    *
    * Values returned from middleware functions will be passed to the next middleware as an argument.
-   *
-   * If previous middleware function returned nullable value (**null** or **undefined**), the `ctx` will be
-   * passed to the next middleware unmodified.
    *
    * If middleware that is currently being processed returns a Promise, it will be resolved before being passed to
    * the next middleware.
@@ -89,11 +88,7 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
         throw new TypeError("Middleware must be a function");
       }
 
-      const done = await this._middleware[i](result);
-
-      if (done != null) {
-        result = done;
-      }
+      result = await this._middleware[i](result);
     }
 
     return result;

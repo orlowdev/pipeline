@@ -55,10 +55,6 @@ describe("IntermediatePipeline", () => {
       expect(await IntermediatePipeline.from([]).process(1)).toEqual(1);
     });
 
-    it("should preserve context if nothing was returned", async () => {
-      expect(await IntermediatePipeline.from([() => {}]).process(1)).toEqual(1);
-    });
-
     it("should throw TypeError if pipeline was created with a non-function", async () => {
       try {
         await IntermediatePipeline.of(null).process((1 as unknown) as string);
