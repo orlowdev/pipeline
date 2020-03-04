@@ -74,4 +74,3 @@ Pipeline.of(mockFetch)
   .process("https://example.com/arbitrary-numbers")
   .catch(console.error);
 ```
-
