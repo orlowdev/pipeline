@@ -27,7 +27,7 @@ jobs:
         - bash <(curl -s https://codecov.io/bash) -t "${CODECOV_TOKEN}" -f coverage/*.json
     - stage: versioning
       script:
-        - npm install -g @priestine/semantics
+        - npm install -g @priestine/semantics@5.1.1
         - priestine-semantics --private-token=${SEMANTICS_TOKEN} --project-path=priestine/pipeline --prefix=v
     - stage: publish
       script:
