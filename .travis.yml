@@ -9,11 +9,11 @@ cache:
 stages:
   - check
   - name: cover
-    if: branch = master AND type != push
+    if: branch = master
   - name: versioning
-    if: branch = master AND type != push
+    if: branch = master
   - name: publish
-    if: tag IS present AND tag =~ ^v AND type != push
+    if: tag IS present AND tag =~ ^v
 
 jobs:
   include:
