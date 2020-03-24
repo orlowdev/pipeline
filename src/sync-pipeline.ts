@@ -69,7 +69,7 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
    *
    * @param ctx
    */
-  public process(ctx: TReserved): TResult {
+  public process(ctx?: TReserved): TResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: TReserved | any;
 

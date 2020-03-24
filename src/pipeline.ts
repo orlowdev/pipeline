@@ -73,7 +73,7 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
    *
    * @param ctx
    */
-  public async process(ctx: TReserved): Promise<TResult> {
+  public async process(ctx?: TReserved): Promise<TResult> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result: TContext | any;
 
