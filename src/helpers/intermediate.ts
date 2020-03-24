@@ -1,5 +1,4 @@
 import { IntermediateInterface } from "../interfaces";
-import { isIntermediate } from "./is-intermediate";
 
 export class Intermediate<T = {}> implements IntermediateInterface {
   public static of<T>(value: T): Intermediate<T> {
@@ -7,7 +6,7 @@ export class Intermediate<T = {}> implements IntermediateInterface {
   }
 
   public static isIntermediate(x: unknown): x is IntermediateInterface {
-    return isIntermediate(x);
+    return typeof x == "object" && x != null && "intermediate" in x;
   }
 
   public intermediate: T;
