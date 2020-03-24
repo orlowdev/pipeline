@@ -6,8 +6,6 @@ The main goal of this package is a proof of concept that simplified representati
 
 The _Pipeline_ can be concatenated with other _Pipelines_ with `concat` which enables multiple sets of middleware to be composed together.
 
-## Table of Contents
-
 ## Features
 
 - Composition of pipelines via `concat`
@@ -15,12 +13,11 @@ The _Pipeline_ can be concatenated with other _Pipelines_ with `concat` which en
 - If middleware returns `undefined` or `null`, result of previous computation is passed to the next middleware
 - _Pipeline_ is a **Semigroup** (associativity) with `p.concat(o)`
 - _Pipeline_ is a **Monoid** (right identity and left identity) with `p.empty()` and `P.empty()`
-- _IntermediatePipeline_ is a kind of _Pipeline_ that operates
 
 ## Installation
 
 ```bash
-npm install @priestine/pipeline --save
+npm i -S @priestine/pipeline
 ```
 
 ## Usage
