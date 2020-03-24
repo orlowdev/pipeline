@@ -84,7 +84,11 @@ export class SyncPipeline<TContext, TResult, TReserved> extends BasePipeline<TCo
         throw new TypeError("Middleware must be a function");
       }
 
-      result = this._middleware[i](result);
+      const done = this._middleware[i](result);
+
+      if (done != null) {
+        result = done;
+      }
     }
 
     return result;

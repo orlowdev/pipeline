@@ -88,7 +88,11 @@ export class Pipeline<TContext, TResult, TReserved> extends BasePipeline<TContex
         throw new TypeError("Middleware must be a function");
       }
 
-      result = await this._middleware[i](result);
+      const done = await this._middleware[i](result);
+
+      if (done != null) {
+        result = done;
+      }
     }
 
     return result;
